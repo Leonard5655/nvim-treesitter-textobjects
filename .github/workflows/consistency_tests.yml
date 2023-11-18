@@ -10,7 +10,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        python-version: ['3.10']
+        python-version: ["3.10"]
         nvim-tag: [stable]
 
     steps:
@@ -21,23 +21,24 @@ jobs:
 
       - name: Prepare Nvim
         env:
-          NVIM_TAG: ${{ matrix.nvim-tag }}
+          NVIM_TAG: nightly
         run: |
           sudo apt-get update && sudo apt-get install libfuse2
           sudo add-apt-repository universe
-          wget https://github.com/neovim/neovim/releases/download/${NVIM_TAG}/nvim.appimage
-          chmod u+x nvim.appimage && sudo mv nvim.appimage /usr/local/bin/nvim
+          wget https://github.com/neovim/neovim/releases/download/nightly/nvim-linux64.tar.gz
+          tar -zxf nvim-linux64.tar.gz
+          sudo ln -s "$PWD"/nvim-linux64/bin/nvim /usr/local/bin
 
           git clone -b v0.1.3 --depth 1 https://github.com/kiyoon/nvim-treesitter-textobjects-tests
 
-          mkdir -p ~/.local/share/nvim/site/pack/nvim-treesitter-textobject/opt
-          ln -s $(pwd) ~/.local/share/nvim/site/pack/nvim-treesitter-textobject/opt
-          mkdir -p ~/.local/share/nvim/site/pack/nvim-treesitter/opt
-          cd ~/.local/share/nvim/site/pack/nvim-treesitter/opt
-          git clone https://github.com/nvim-treesitter/nvim-treesitter.git
-          
+          mkdir -p ~/.local/share/nvim/site/pack/nvim-treesitter-textobject/start
+          ln -s $(pwd) ~/.local/share/nvim/site/pack/nvim-treesitter-textobject/start
+          mkdir -p ~/.local/share/nvim/site/pack/nvim-treesitter/start
+          cd ~/.local/share/nvim/site/pack/nvim-treesitter/start
+          git clone -b main https://github.com/nvim-treesitter/nvim-treesitter.git
+
       - name: Compile parsers
-        run: nvim --headless -c "packadd nvim-treesitter" -c "TSInstallSync python" -c "q"
+        run: nvim -l scripts/install_parsers.lua python
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
