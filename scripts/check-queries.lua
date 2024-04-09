@@ -26,23 +26,28 @@ local function do_check()
 
   local captures = extract_captures()
 
+  local already_seen = {} ---@type table<string|nil, true>
   for _, parser in pairs(parsers) do
     local filetypes = vim.treesitter.language.get_filetypes(parser)
     for _, filetype in ipairs(filetypes) do
-      local lang = vim.treesitter.language.get_lang(filetype)
-      for _, query_type in pairs(query_types) do
-        print("Checking " .. lang .. " " .. query_type)
-        local query = vim.treesitter.query.get(lang, query_type)
+      if not already_seen[filetype] then
+        already_seen[filetype] = true
 
-        if query then
-          for _, capture in ipairs(query.captures) do
-            if
-              not vim.startswith(capture, "_") -- We ignore things like _helper
-              and captures[query_type]
-              and not capture:find "^[A-Z]"
-              and not vim.tbl_contains(captures[query_type], capture)
-            then
-              error(string.format("Invalid capture @%s in %s for %s.", capture, query_type, lang))
+        local lang = vim.treesitter.language.get_lang(filetype)
+        for _, query_type in pairs(query_types) do
+          print("Checking " .. lang .. " " .. query_type)
+          local query = vim.treesitter.query.get(lang, query_type)
+
+          if query then
+            for _, capture in ipairs(query.captures) do
+              if
+                not vim.startswith(capture, "_") -- We ignore things like _helper
+                and captures[query_type]
+                and not capture:find "^[A-Z]"
+                and not vim.tbl_contains(captures[query_type], capture)
+              then
+                error(string.format("Invalid capture @%s in %s for %s.", capture, query_type, lang))
+              end
             end
           end
         end
