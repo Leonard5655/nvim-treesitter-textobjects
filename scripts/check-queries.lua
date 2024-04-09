@@ -32,7 +32,7 @@ local function do_check()
     for _, filetype in ipairs(filetypes) do
       local lang = vim.treesitter.language.get_lang(filetype)
       for _, query_type in pairs(query_types) do
-        if not already_seen[lang][query_type] then
+        if not already_seen[lang] and not already_seen[lang][query_type] then
           already_seen[lang][query_type] = true
           print("Checking " .. lang .. " " .. query_type)
           local query = vim.treesitter.query.get(lang, query_type)
