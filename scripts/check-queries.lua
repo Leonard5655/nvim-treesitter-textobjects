@@ -26,14 +26,15 @@ local function do_check()
 
   local captures = extract_captures()
 
-  local already_seen = {} ---@type table<string|nil, table<string<nil, true>>
+  local already_seen = {} ---@type table<string|nil, true>
   for _, parser in pairs(parsers) do
     local filetypes = vim.treesitter.language.get_filetypes(parser)
     for _, filetype in ipairs(filetypes) do
-      local lang = vim.treesitter.language.get_lang(filetype)
-      for _, query_type in pairs(query_types) do
-        if not already_seen[lang][query_type] then
-          already_seen[lang][query_type] = true
+      if not already_seen[filetype] then
+        already_seen[filetype] = true
+
+        local lang = vim.treesitter.language.get_lang(filetype)
+        for _, query_type in pairs(query_types) do
           print("Checking " .. lang .. " " .. query_type)
           local query = vim.treesitter.query.get(lang, query_type)
 
